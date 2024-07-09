@@ -4,8 +4,10 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'typeorm/entities/User';
+import { User } from 'src/typeorm/entities/User';
 import { NatsClientModule } from './nats-client/nats-client.module';
+import { Equipe } from './typeorm/entities/Equipe';
+import { EquipeModule } from './equipe/equipe.module';
 
 @Module({
   imports: [
@@ -20,13 +22,14 @@ import { NatsClientModule } from './nats-client/nats-client.module';
       username: process.env.TYPEORM_USERNAME,
       password: process.env.TYPEORM_PASSWORD,
       database: process.env.TYPEORM_DATABASE,
-      entities: [User],
+      entities: [User, Equipe],
       synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
     }) ,
     
 
-    TypeOrmModule.forFeature([User]) ,
-    NatsClientModule
+    TypeOrmModule.forFeature([User, Equipe]) ,
+    NatsClientModule,
+    EquipeModule
 
   ],
   controllers: [AppController],

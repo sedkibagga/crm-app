@@ -1,7 +1,7 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto, LoginUserDto } from './dtos/userDto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'typeorm/entities/User';
+import { User } from 'src/typeorm/entities/User';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class UsersService {
 
-   constructor(@InjectRepository(User) private userRepository: Repository<User>, private jwtService: JwtService) { }
+   constructor(@InjectRepository(User) private userRepository: Repository<User>, private jwtService: JwtService) {}
 
    async createUser(createUserDto: CreateUserDto) {
       try {
@@ -58,7 +58,7 @@ export class UsersService {
    async getUserById (id:string) {
       try{ 
 
-         const user :User = await this.userRepository.findOne({ where: { id } });
+         const user :User = await this.userRepository.findOne({ where: { id } , relations: ['equipes_chef']});
          if (!user) {
             return new HttpException("user not found", 400);
          } else {
@@ -67,16 +67,13 @@ export class UsersService {
          }
 
       } catch(error) { 
-
          return new HttpException(error.message || 'Error getting user', 400);
-
-
       }
       
    } 
 
    getAllUsers () {
-      const users : Promise<User[]> = this.userRepository.find() ; 
+      const users : Promise<User[]> = this.userRepository.find({relations: ['equipes_chef']}) ; 
       return users ;
    } 
 

@@ -5,6 +5,7 @@ import { jwtAuthGuard } from './guards/jwt-guard';
 import { RolesGuard } from './guards/roles-guard';
 import { Roles } from './decorators/roles.decorator';
 import { RolesEnum } from './Roles/Roles.enum';
+import { CreateEquipeDto } from './dto/equipe.dto';
 @Controller('users')
 export class UsersController {
     constructor(@Inject('NATS_SERVICE') private natsClient: ClientProxy) {} 
@@ -22,16 +23,14 @@ export class UsersController {
 
 
   @Post('create')
+  @UseGuards(jwtAuthGuard,RolesGuard)
+  @Roles(RolesEnum.ADMIN)
   createUser (@Body() createuserDto: CreateUserDto) { 
-
     return this.natsClient.send({ cmd: 'create_user' }, createuserDto)
-      
   } 
 
-  @Post('login') 
-
+  @Post('login')
   LoginUser (@Body() loginUserDto : LoginUserDto ) {
-   
     return this.natsClient.send({ cmd: 'login_user' }, loginUserDto)
   } 
 
@@ -54,11 +53,10 @@ export class UsersController {
 
   } 
   @Get('admin/all')
-   @UseGuards(jwtAuthGuard,RolesGuard)
-   @Roles(RolesEnum.ADMIN)
-   getAllUsers(@Req() req) {
+  @UseGuards(jwtAuthGuard,RolesGuard)
+  @Roles(RolesEnum.ADMIN)
+  getAllUsers(@Req() req) {
     try {
-      console.log("req.user",req.user)
       console.log("role:" , RolesEnum.ADMIN);
     return  this.natsClient.send({ cmd: 'get_all_users' }, {}) ;
     } catch (error) {
@@ -76,9 +74,11 @@ export class UsersController {
   async deleteUser(@Param("id") id: string) {
     return this.natsClient.send({ cmd: "delete_user" }, id);
   }
-
-   
-
-
-   
+  
+  @Post("admin/create/equipe")
+  @UseGuards(jwtAuthGuard, RolesGuard)
+  @Roles(RolesEnum.ADMIN)
+  createEquipe(@Body() createEquipeDto: CreateEquipeDto){
+    return this.natsClient.send({ cmd: 'create_equipe' }, createEquipeDto)
+  }
 }

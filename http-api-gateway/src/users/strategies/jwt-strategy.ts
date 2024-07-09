@@ -25,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             return { id: payload.sub, nom: payload.nom  , role : payload.role };
         } catch (error) {
             this.logger.error(`Error validating token: ${error.message}`);
-            console.log("payload", payload);
+            // console.log("payload", payload);
             throw new UnauthorizedException('Unauthorized');
         }
     }
