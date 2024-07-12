@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, ForbiddenException, Get, HttpException, Inject, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, HttpException, Inject, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreateUserDto, LoginUserDto } from './dto/User.dto';
 import { jwtAuthGuard } from './guards/jwt-guard';
@@ -7,6 +7,8 @@ import { Roles } from './decorators/roles.decorator';
 import { RolesEnum } from './Roles/Roles.enum';
 import { CreateEquipeDto } from './dto/equipe.dto';
 import { AjouterMembreDto } from './dto/ajouterMembre.dto';
+import { PointDeVenteDto } from './dto/pointDeVente.dto';
+import { UpdatePointDeVenteDto } from './dto/updatePointDeVente.dto';
 @Controller('users')
 export class UsersController {
     constructor(@Inject('NATS_SERVICE') private natsClient: ClientProxy) {} 
@@ -109,5 +111,29 @@ export class UsersController {
   @Roles(RolesEnum.CHEF_EQUIPE)
   async deleteMembre(@Param('equipeid') equipeid: string, @Param('membreid') membreid: string) {
     return this.natsClient.send({ cmd: "delete_membre" }, {equipeid,membreid});
+  }
+
+  @Post('ajouterPointDeVente')
+  @UseGuards(jwtAuthGuard, RolesGuard)
+  @Roles(RolesEnum.COMMERCIAL)
+  ajouterPointDeVente(@Body() pointDeVenteDto:PointDeVenteDto){
+    try{
+      return this.natsClient.send({cmd: "ajouter_point_de_vente"}, pointDeVenteDto)
+    } catch(error) {
+      return error
+    }
+  }
+
+  @Get("getPoitDeVente")
+  @UseGuards(jwtAuthGuard)
+  getPoitDeVente(@Req() req){
+    return this.natsClient.send({cmd: 'get_all_point_de_vente'}, {})
+  }
+
+  @Patch('update/pointDeVente/:id')
+  @UseGuards(jwtAuthGuard, RolesGuard)
+  @Roles(RolesEnum.COMMERCIAL, RolesEnum.SEDENTAIRE)
+  updatePointDeVente(@Body() data: UpdatePointDeVenteDto, @Param("id") id: string){
+    return this.natsClient.send({cmd: 'update_point_de_vente'}, {data, id})
   }
 }
