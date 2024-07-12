@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./User";
+import { MembreEquipe } from "./MembreEquipe";
 
 @Entity({ name: "equipe" })
 export class Equipe {
@@ -18,4 +19,7 @@ export class Equipe {
     @ManyToOne(() => User, user => user.equipes_chef)
     @JoinColumn({ name: 'id_chefEquipe' })
     chefEquipe?: User;
+
+    @OneToMany(() => MembreEquipe, membre => membre.equipe, {onDelete: 'CASCADE'})
+    membres: User[];
 }

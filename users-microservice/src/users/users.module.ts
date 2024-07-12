@@ -7,9 +7,10 @@ import { NatsClientModule } from 'src/nats-client/nats-client.module';
 import { JwtModule } from '@nestjs/jwt';
 import { Constants } from 'src/constants/constants';
 import { Equipe } from 'src/typeorm/entities/Equipe';
+import { MembreEquipe } from 'src/typeorm/entities/MembreEquipe';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User, Equipe]) , NatsClientModule , JwtModule.register({
+    imports: [TypeOrmModule.forFeature([User, Equipe, MembreEquipe]) , NatsClientModule , JwtModule.register({
         secret: 'abc123',
         signOptions: { expiresIn: '1h' }, 
       }),],

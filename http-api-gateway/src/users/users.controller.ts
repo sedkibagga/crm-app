@@ -6,6 +6,7 @@ import { RolesGuard } from './guards/roles-guard';
 import { Roles } from './decorators/roles.decorator';
 import { RolesEnum } from './Roles/Roles.enum';
 import { CreateEquipeDto } from './dto/equipe.dto';
+import { AjouterMembreDto } from './dto/ajouterMembre.dto';
 @Controller('users')
 export class UsersController {
     constructor(@Inject('NATS_SERVICE') private natsClient: ClientProxy) {} 
@@ -80,5 +81,33 @@ export class UsersController {
   @Roles(RolesEnum.ADMIN)
   createEquipe(@Body() createEquipeDto: CreateEquipeDto){
     return this.natsClient.send({ cmd: 'create_equipe' }, createEquipeDto)
+  }
+  
+  @Get("admin/getEquipes")
+  @UseGuards(jwtAuthGuard, RolesGuard)
+  @Roles(RolesEnum.ADMIN)
+  getAllEquipes(@Req() req){
+    return this.natsClient.send({cmd: 'get_all_equipes'}, {})
+  }
+
+  @Delete("admin/deleteEquipe/:id")
+  @UseGuards(jwtAuthGuard,RolesGuard)
+  @Roles(RolesEnum.ADMIN)
+  async deleteEquipe(@Param("id") id: string) {
+    return this.natsClient.send({ cmd: "delete_equipe" }, id);
+  }
+
+  @Post("ajouterMembre")
+  @UseGuards(jwtAuthGuard, RolesGuard)
+  @Roles(RolesEnum.CHEF_EQUIPE)
+  ajouterMembre(@Body() ajouterMembreDto: AjouterMembreDto){
+    return this.natsClient.send({cmd: "ajouter_membre"}, ajouterMembreDto)
+  }
+
+  @Delete('admin/deleteMembre/:equipeid/:membreid')
+  @UseGuards(jwtAuthGuard, RolesGuard)
+  @Roles(RolesEnum.CHEF_EQUIPE)
+  async deleteMembre(@Param('equipeid') equipeid: string, @Param('membreid') membreid: string) {
+    return this.natsClient.send({ cmd: "delete_membre" }, {equipeid,membreid});
   }
 }
