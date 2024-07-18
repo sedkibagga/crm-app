@@ -5,11 +5,8 @@ import { Equipe } from 'src/typeorm/entities/Equipe';
 import { User } from 'src/typeorm/entities/User';
 import { Repository } from 'typeorm';
 import { CreateEquipeDto } from './dtos/equipe.dto';
-import e from 'express';
-import { memoryUsage } from 'process';
-import { PartitionAssigner } from '@nestjs/microservices/external/kafka.interface';
-import { MembreEquipe } from 'src/typeorm/entities/MembreEquipe';
 import { plainToClass } from 'class-transformer';
+import { UpdateEquipeDto } from './dtos/updateEquipe.dto';
 
 @Injectable()
 export class EquipeService {
@@ -25,25 +22,25 @@ export class EquipeService {
             const chefEquipe = await this.userRepository.findOne({ where: { id: id_chefEquipe } });
             
             if (!chefEquipe) {
-                throw new HttpException("Chef d'équipe non trouvé", 404);
+                return new HttpException("Chef d'équipe non trouvé", 404);
             }
 
             if (chefEquipe.role !== 'chef_equipe') {
-                throw new HttpException("Le chef d'équipe doit avoir le rôle 'chef_equipe'", 400);
+                return new HttpException("Le chef d'équipe doit avoir le rôle 'chef_equipe'", 400);
             }
 
-            const {password, ...resChef} = chefEquipe
+            const chefWithoutPassword = plainToClass(User, chefEquipe)
 
             const equipeCreated = this.equipeRepository.create({
                 secteur,
                 lieu,
                 nom,
-                chefEquipe: resChef
+                chefEquipe: chefWithoutPassword
             });
 
             await this.equipeRepository.save(equipeCreated);
             
-            if (!chefEquipe.equipes_chef) {
+            if (!chefEquipe.equipes_chef && chefEquipe.role === "chef_equipe") {
                 chefEquipe.equipes_chef = [];
             }
             chefEquipe.equipes_chef.push(equipeCreated);
@@ -108,6 +105,21 @@ export class EquipeService {
 
         } catch (error) {
             return new HttpException('Error deleting equipe', HttpStatus.BAD_REQUEST)
+        }
+    }
+
+    async updateEquipe(updateEquipeDto: UpdateEquipeDto, id:string){
+        try{
+            const findedById = await this.equipeRepository.findOne({where : {id_equipe:id}})
+            if (!findedById){
+                return new HttpException("Equipe not found", 400);
+            } else {
+                return await this.equipeRepository.update(id,updateEquipeDto)
+            }
+
+        } catch(error){
+            console.log(error)
+            return new HttpException(error.message || 'Error adding Equipe', 400);
         }
     }
 }

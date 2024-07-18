@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Equipe } from "./Equipe";
 import { Exclude } from "class-transformer";
+import { RendezVous } from "./RendezVous";
 
 @Entity({ name: 'users' })
 export class User {
@@ -20,12 +21,15 @@ export class User {
     @Exclude()
     password: string;
 
-    @Column()
+    @Column({ default: 'user' })
     role?: string;
 
     @Column()
     num_tel: number;
 
-    @OneToMany(() => Equipe, equipe => equipe.chefEquipe)
+    @OneToMany(() => Equipe, equipe => equipe.chefEquipe, {cascade:true, onDelete: "CASCADE"})
     equipes_chef?: Equipe[];
+
+    @OneToMany(() => RendezVous, rendezVous => rendezVous.commercial, {cascade:true, onDelete: "CASCADE"})
+    rendez_vous?: RendezVous[];
 }

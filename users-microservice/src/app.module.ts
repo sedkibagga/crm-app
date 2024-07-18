@@ -12,6 +12,8 @@ import { MembreEquipe } from './typeorm/entities/MembreEquipe';
 import { MembreEquipeModule } from './membre-equipe/membre-equipe.module';
 import { PointDeVenteModule } from './point-de-vente/point-de-vente.module';
 import { PointDeVente } from './typeorm/entities/PointDeVente';
+import { RendezVousModule } from './rendez-vous/rendez-vous.module';
+import { RendezVous } from './typeorm/entities/RendezVous';
 
 @Module({
   imports: [
@@ -26,16 +28,17 @@ import { PointDeVente } from './typeorm/entities/PointDeVente';
       username: process.env.TYPEORM_USERNAME,
       password: process.env.TYPEORM_PASSWORD,
       database: process.env.TYPEORM_DATABASE,
-      entities: [User, Equipe, MembreEquipe, PointDeVente],
+      entities: [User, Equipe, MembreEquipe, PointDeVente, RendezVous],
       synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
     }) ,
     
 
-    TypeOrmModule.forFeature([User, Equipe, MembreEquipe, PointDeVente]) ,
+    TypeOrmModule.forFeature([User, Equipe, MembreEquipe, PointDeVente, RendezVous]) ,
     NatsClientModule,
     EquipeModule,
     MembreEquipeModule,
-    PointDeVenteModule
+    PointDeVenteModule,
+    RendezVousModule
 
   ],
   controllers: [AppController],

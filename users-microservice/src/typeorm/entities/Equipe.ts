@@ -16,10 +16,10 @@ export class Equipe {
     @Column()
     nom: string;
 
-    @ManyToOne(() => User, user => user.equipes_chef)
+    @ManyToOne(() => User, user => user.equipes_chef, {onDelete: "CASCADE"})
     @JoinColumn({ name: 'id_chefEquipe' })
     chefEquipe?: User;
 
-    @OneToMany(() => MembreEquipe, membre => membre.equipe, {onDelete: 'CASCADE'})
+    @OneToMany(() => MembreEquipe, membre => membre.equipe, {cascade:true, onDelete: 'CASCADE'})
     membres: User[];
 }

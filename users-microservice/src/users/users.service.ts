@@ -5,11 +5,15 @@ import { User } from 'src/typeorm/entities/User';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class UsersService {
 
-   constructor(@InjectRepository(User) private userRepository: Repository<User>, private jwtService: JwtService) {}
+   constructor(
+      @InjectRepository(User) private userRepository: Repository<User>, 
+      private jwtService: JwtService
+   ) {}
 
    async createUser(createUserDto: CreateUserDto) {
       try {
@@ -22,7 +26,8 @@ export class UsersService {
          const hashedPassword = await bcrypt.hash(password, salt);
          console.log(hashedPassword);
          const userCreated = this.userRepository.create({ ...user, password: hashedPassword, email: email });
-         return await this.userRepository.save(userCreated)
+         
+         return plainToClass(User, await this.userRepository.save(userCreated))
 
       } catch (error) {
 
@@ -57,25 +62,43 @@ export class UsersService {
 
    async getUserById (id:string) {
       try{ 
-
-         const user :User = await this.userRepository.findOne({ where: { id } , relations: ['equipes_chef']});
+         const user :User = await this.userRepository.findOne({ where: { id } , relations: ['equipes_chef', 'rendez_vous']});
          if (!user) {
             return new HttpException("user not found", 400);
          } else {
-            const {password, ...result} = user ;
-            return result;
+            
+            if (user.role === "chef_equipe") {
+               const userModified =  {...user, rendez_vous: undefined};
+               return plainToClass(User, userModified);
+            } else if (user.role === "commercial") {
+               const userModified =  {...user,equipes_chef: undefined};
+               return plainToClass(User, userModified);
+            }  else {
+               const userModified =  {...user, equipes_chef: undefined, rendez_vous: undefined};
+               return plainToClass(User, userModified);
+            }
          }
-
       } catch(error) { 
          return new HttpException(error.message || 'Error getting user', 400);
       }
-      
    } 
 
-   getAllUsers () {
-      const users : Promise<User[]> = this.userRepository.find({relations: ['equipes_chef']}) ; 
-      return users ;
-   } 
+   async getAllUsers () {
+      const users = await this.userRepository.find({
+         relations: ['equipes_chef', 'rendez_vous'],
+       });
+
+       const filteredUsers = users.map(user => {
+         if (user.role === "chef_equipe") {
+            return {...user, rendez_vous: undefined};
+         } else if (user.role === "commercial") {
+           return {...user, equipes_chef: undefined};
+         }  else {
+            return {...user, equipes_chef: undefined, rendez_vous: undefined};
+          }
+      });
+      return plainToClass(User, filteredUsers);
+   }
 
    async deletUserById (id : string)  {
       try { 
@@ -94,9 +117,4 @@ export class UsersService {
 
       }
    }
-
-
-
-
-
 }

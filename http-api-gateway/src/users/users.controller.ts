@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, ForbiddenException, Get, HttpException, Inject, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, HttpException, Inject, Param, Patch, Post, Req, Request, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreateUserDto, LoginUserDto } from './dto/User.dto';
 import { jwtAuthGuard } from './guards/jwt-guard';
@@ -9,10 +9,15 @@ import { CreateEquipeDto } from './dto/equipe.dto';
 import { AjouterMembreDto } from './dto/ajouterMembre.dto';
 import { PointDeVenteDto } from './dto/pointDeVente.dto';
 import { UpdatePointDeVenteDto } from './dto/updatePointDeVente.dto';
+import { CreateRendezVousDto } from './dto/CreateRendezVous.dto';
+import { UpdateRendezVousDto } from './dto/updateRendezVous.dto';
+import { UpdateEquipeDto } from './dto/updateEquipe.dto';
+
 @Controller('users')
 export class UsersController {
     constructor(@Inject('NATS_SERVICE') private natsClient: ClientProxy) {} 
   
+
     async verificationAuth(@Req() req: any, id: string): Promise<void> {
       const userAuthenticatedId = req.user.id; 
       console.log("req.user:", req.user);
@@ -21,8 +26,6 @@ export class UsersController {
         throw new ForbiddenException('You are not authorized to access this resource');
       }
     }
-
-
 
   @Post('create')
   @UseGuards(jwtAuthGuard,RolesGuard)
@@ -36,7 +39,6 @@ export class UsersController {
     return this.natsClient.send({ cmd: 'login_user' }, loginUserDto)
   } 
 
- 
   @Get('userById/:id') 
   @UseGuards(jwtAuthGuard)
   async getUserById(@Param('id') id: string , @Req() req) {
@@ -45,15 +47,15 @@ export class UsersController {
       console.log("req.user",req.user)
       await this.verificationAuth(req, id);
       return this.natsClient.send({ cmd: 'get_user_by_id' }, id);
-  } catch (error) {
-    if (error instanceof ForbiddenException) {
-      return error;
-    } else {
-      return new HttpException('Internal server error', 500);
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        return error;
+      } else {
+        return new HttpException('Internal server error', 500);
+      }
     }
-  }
-
   } 
+
   @Get('admin/all')
   @UseGuards(jwtAuthGuard,RolesGuard)
   @Roles(RolesEnum.ADMIN)
@@ -125,7 +127,7 @@ export class UsersController {
 
   @Get("getPointDeVente")
   @UseGuards(jwtAuthGuard)
-  getPoitDeVente(@Req() req){
+  getPointDeVente(@Req() req){
     return this.natsClient.send({cmd: 'get_all_point_de_vente'}, {})
   }
 
@@ -134,5 +136,38 @@ export class UsersController {
   @Roles(RolesEnum.COMMERCIAL, RolesEnum.SEDENTAIRE)
   updatePointDeVente(@Body() data: UpdatePointDeVenteDto, @Param("id") id: string){
     return this.natsClient.send({cmd: 'update_point_de_vente'}, {data, id})
+  }
+
+  @Post('ajouterRendezVous')
+  @UseGuards(jwtAuthGuard, RolesGuard)
+  @Roles(RolesEnum.SEDENTAIRE)
+  ajouterRendezVous(@Body() createRendezVousDto: CreateRendezVousDto){
+    try{
+      return this.natsClient.send({cmd: "create_rendez-vous"}, createRendezVousDto)
+    } catch (error) {
+      return error
+    }
+  }
+
+  @Patch('update/rendezVous/:id')
+  @UseGuards(jwtAuthGuard, RolesGuard)
+  @Roles(RolesEnum.COMMERCIAL)
+  updateRendezVous(@Body() data: UpdateRendezVousDto, @Param("id") id:string){
+    return this.natsClient.send({cmd: 'update_rendez-vous'}, {data, id})
+  }
+
+  @Get("getRendezVous")
+  @UseGuards(jwtAuthGuard, RolesGuard)
+  @Roles(RolesEnum.COMMERCIAL)
+  async getNotDoneRendezVous(@Request() req) {
+    const userId = req.user.id;
+    return this.natsClient.send({cmd: 'get_rendez-vous'}, userId)
+  }
+  
+  @Patch("/update/equipe/:id")
+  @UseGuards(jwtAuthGuard, RolesGuard)
+  @Roles(RolesEnum.ADMIN)
+  async updateEquipe(@Body() data: UpdateEquipeDto, @Param("id") id:string){
+    return this.natsClient.send({cmd: 'update_equipe'}, {data, id})
   }
 }

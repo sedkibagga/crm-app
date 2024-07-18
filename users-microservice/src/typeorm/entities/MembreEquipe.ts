@@ -13,7 +13,7 @@ export class MembreEquipe{
     // @PrimaryColumn()
     // id_equipe: string
 
-    @ManyToOne(() => User, user => user.id)
+    @ManyToOne(() => User, user => user.id, {onDelete: "CASCADE"})
     @JoinColumn({ name: 'id_membre' })
     membre: User;
 
