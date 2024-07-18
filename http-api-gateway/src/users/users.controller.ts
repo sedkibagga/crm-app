@@ -13,7 +13,6 @@ import { UpdatePointDeVenteDto } from './dto/updatePointDeVente.dto';
 export class UsersController {
     constructor(@Inject('NATS_SERVICE') private natsClient: ClientProxy) {} 
   
-
     async verificationAuth(@Req() req: any, id: string): Promise<void> {
       const userAuthenticatedId = req.user.id; 
       console.log("req.user:", req.user);
@@ -124,7 +123,7 @@ export class UsersController {
     }
   }
 
-  @Get("getPoitDeVente")
+  @Get("getPointDeVente")
   @UseGuards(jwtAuthGuard)
   getPoitDeVente(@Req() req){
     return this.natsClient.send({cmd: 'get_all_point_de_vente'}, {})

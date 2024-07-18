@@ -20,7 +20,7 @@ export class User {
     @Exclude()
     password: string;
 
-    @Column({ default: 'user' })
+    @Column()
     role?: string;
 
     @Column()
