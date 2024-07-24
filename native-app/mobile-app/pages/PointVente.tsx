@@ -12,12 +12,13 @@ import { useNavigation } from '@react-navigation/native';
 const PointVente = () => {
     const dispatch = useDispatch();
   const navigation = useNavigation();
-    useEffect(() => {
-        dispatch(getAllPointDeVente() as any);
-    }, [dispatch]);
     const {user} = useSelector((state: RootState) => state.auth);
     const { pointsDeVente } = useSelector((state: RootState) => state.api);
     console.log("pointsDeVente", pointsDeVente);
+    useEffect(() => {
+       dispatch(getAllPointDeVente() as any);
+    }, [dispatch  ]);
+   
     const { showModalNavigation, showModalProfile } = useSelector((state: RootState) => state.state);
     console.log("showModalNavigation", showModalNavigation);
     return (

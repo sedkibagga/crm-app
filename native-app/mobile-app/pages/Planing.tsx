@@ -1,45 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, Text } from 'react-native';
 import { Searchbar } from 'react-native-paper';
 import PlaningComponent, { PlaningComponentProps } from '../components/PlaningComponent';
 import Header from '../components/HeaderComponent';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/Store/Store';
+import { getAllRendezVous } from '@/features/apis/apisSlice';
+import { getRendezVous } from '@/Types/DataTypes';
 
 const Planing = () => {
+    const dispatch = useDispatch();
     const { showModalNavigation } = useSelector((state: RootState) => state.state);
     const { user } = useSelector((state: RootState) => state.auth);
-
-    const data: PlaningComponentProps[] = [
-        { 
-            id : '1',
-            name_client: 'baggasedki',
-            date: '10/09/2024',
-            adresse: 'sousse centre',
-            heure: '16:40'
-        },
-        { 
-            id : '2',
-            name_client: 'Nour',
-            date: '14/05/2024',
-            adresse: 'souuse cnrps',
-            heure: '17h'
-        },
-        {   
-            id : '3',
-            name_client: 'Nour',
-            date: '14/05/2024',
-            adresse: 'souuse cnrps',
-            heure: '17h'
-        },
-        {  
-            id : '4',
-            name_client: 'Nour',
-            date: '14/05/2024',
-            adresse: 'souuse cnrps',
-            heure: '17h'
-        }
-    ];
+    const {rendez_vous_List} = useSelector((state: RootState) => state.api);
+     console.log("rendez_vous_List" , rendez_vous_List);
+     useEffect(() => {
+        dispatch(getAllRendezVous() as any); 
+    }, [dispatch]);
+     
+      
 
     const [TextSearch, setTextSearch] = useState<string>("");
 
@@ -51,16 +30,24 @@ const Planing = () => {
                 <>
                   
                     <ScrollView>
-                        {data.map((item: PlaningComponentProps, index: number) => (
+                    {rendez_vous_List && rendez_vous_List.length > 0 ? (
+                        rendez_vous_List.map((rendez_vous: getRendezVous) => (
                             <PlaningComponent
-                            id={item.id}
-                                key={index}
-                                name_client={item.name_client}
-                                date={item.date}
-                                adresse={item.adresse}
-                                heure={item.heure}
+                                key={rendez_vous.id}
+                                id={rendez_vous.id}
+                                Nom_Prenom={rendez_vous.Nom_Prenom}
+                                date={new Date(rendez_vous.date)}
+                                localisation={rendez_vous.localisation}
+                                num_tel={rendez_vous.num_tel}
+                                heure={rendez_vous.heure}
+                                statut={rendez_vous.statut}
                             />
-                        ))}
+                        ))
+                    ) : (
+                        <View style={styles.unauthorizedContainer}>
+                            <Text>No rendez-vous found</Text>
+                        </View>
+                    )}
                     </ScrollView>
                 </>
             ) : (
