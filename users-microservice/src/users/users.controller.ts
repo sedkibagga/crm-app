@@ -2,6 +2,8 @@ import { Controller } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CreateUserDto, LoginUserDto } from './dtos/userDto';
+import { UpdateUserDto } from './dtos/updateUser.dto';
+import { ChangePasswordDto } from './dtos/changePassword.dto';
 @Controller('users')
 export class UsersController {
     constructor(private userService : UsersService){}
@@ -31,5 +33,18 @@ export class UsersController {
     async deleteUser(@Payload() id : string) {
         return await this.userService.deletUserById(id);
     }
+
+    @MessagePattern({cmd: "update_user"})
+    async updateUser(@Payload() payload: {data: UpdateUserDto, id: string}){
+        const {data, id} = payload
+        return this.userService.updateUser(data, id)
+    }
+
+    @MessagePattern({cmd: "change_password"})
+    async changePassword(@Payload() payload: {data:ChangePasswordDto, id: string}){
+        const {data, id} = payload
+        return this.userService.changePassword(data, id)
+    }
+
 
 }

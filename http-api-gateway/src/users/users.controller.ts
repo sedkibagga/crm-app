@@ -12,6 +12,8 @@ import { UpdatePointDeVenteDto } from './dto/updatePointDeVente.dto';
 import { CreateRendezVousDto } from './dto/CreateRendezVous.dto';
 import { UpdateRendezVousDto } from './dto/updateRendezVous.dto';
 import { UpdateEquipeDto } from './dto/updateEquipe.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
+import { ChangePasswordDto } from './dto/changePassword.dto';
 
 @Controller('users')
 export class UsersController {
@@ -169,5 +171,35 @@ export class UsersController {
   @Roles(RolesEnum.ADMIN)
   async updateEquipe(@Body() data: UpdateEquipeDto, @Param("id") id:string){
     return this.natsClient.send({cmd: 'update_equipe'}, {data, id})
+  }
+
+  @Patch("updateUser/:id")
+  @UseGuards(jwtAuthGuard)
+  async updateUser(@Param('id') id: string , @Req() req, @Body() data: UpdateUserDto){
+    try {
+      await this.verificationAuth(req, id);
+      return this.natsClient.send({ cmd: 'update_user' }, {id, data});
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        return error;
+      } else {
+        return new HttpException('Internal server error', 500);
+      }
+    }
+  }
+
+  @Patch("changePassword/:id")
+  @UseGuards(jwtAuthGuard)
+  async changePassword(@Param('id') id: string , @Req() req, @Body() data: ChangePasswordDto){
+    try {
+      await this.verificationAuth(req, id);
+      return this.natsClient.send({ cmd: 'change_password' }, {id, data});
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        return error;
+      } else {
+        return new HttpException('Internal server error', 500);
+      }
+    }
   }
 }

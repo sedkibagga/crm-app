@@ -9,7 +9,7 @@ import { hideModal, hideModalProfile } from '../features/states/stateSlice';
 import { loadUserFromStorage, logoutUser } from '../features/auth/authSlice';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
-import { ajoutePointDeVente, reset } from '../features/apis/apisSlice';
+import { ajoutePointDeVente, getAllPointDeVente, reset } from '../features/apis/apisSlice';
 
 const FormComponent = () => {
     const dispatch = useDispatch();
@@ -22,15 +22,15 @@ const FormComponent = () => {
     const [localisation, setLocalisation] = useState<string>('');
     const [decision, setDecision] = useState<string>('');
     const navigation = useNavigation();
-    const {isSuccess , pointDeVenteAjouter , isError, message} = useSelector((state: RootState) => state.api);
+    const {isSuccess , pointDeVenteAjouter , isError, message } = useSelector((state: RootState) => state.api);
     useEffect(() => {
         if (isError) {
             alert(message);
-            dispatch(reset());
+           
         }
         if (isSuccess && pointDeVenteAjouter) {
             alert('Point de vente ajouté avec succès');
-            dispatch(reset());
+            
         }
     }, [isError, isSuccess, message, pointDeVenteAjouter, dispatch]);
 
@@ -43,10 +43,8 @@ const FormComponent = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        // if (!user || !user.token) {
-        //     navigation.navigate('SignIn' as never);
-        // }
-    }, [user, dispatch, navigation]);
+        dispatch(getAllPointDeVente() as any);
+    }, [dispatch, ajoutePointDeVente]);
 
     const onSubmit = () => {
         if (nom.length === 0 || prenom.length === 0 || secteur_activite.length === 0 || num_tel.length === 0 || localisation.length === 0 || decision.length === 0) {

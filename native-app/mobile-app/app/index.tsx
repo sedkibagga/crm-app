@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import {  StyleSheet, View } from "react-native";
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { Provider as PaperProvider } from 'react-native-paper';
@@ -11,6 +11,8 @@ import SignIn from "@/pages/SignIn";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect } from "react";
+import Settings from "@/pages/Settings";
+import Feather from '@expo/vector-icons/Feather';
 
 const Drawer = createDrawerNavigator();
 
@@ -64,6 +66,16 @@ const DrawerNavigator = () => {
             <AntDesign name="calendar" size={size} color={color} />
           ),
         }}
+      /> 
+
+      <Drawer.Screen
+      name="Settings" 
+      component={Settings}
+      options={{
+        drawerIcon: ({ color, size }) => (
+          <Feather name="settings" size={size} color={color} />
+        ),
+      }}
       />
     </Drawer.Navigator>
   );

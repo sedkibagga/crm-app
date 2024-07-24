@@ -3,7 +3,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUserType } from "../../Types/DataTypes";
 
-const BaseUri = "http://192.168.137.1:3000/users/";
+const BaseUri = "http://192.168.1.66:3000/users/";
 
 const register = async (loginData: loginUserType): Promise<any> => {
     try {

@@ -1,4 +1,4 @@
-import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto, LoginUserDto } from './dtos/userDto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/typeorm/entities/User';
@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { plainToClass } from 'class-transformer';
+import { UpdateUserDto } from './dtos/updateUser.dto';
+import { ChangePasswordDto } from './dtos/changePassword.dto';
 
 @Injectable()
 export class UsersService {
@@ -116,5 +118,38 @@ export class UsersService {
          throw new HttpException(error.message || 'Error deleting user', 400);
 
       }
+   }
+
+   async updateUser(updateUserDto: UpdateUserDto, id: string){
+      const user = await this.userRepository.findOne({where: {id}})
+      if (!user){
+         return new HttpException("User not found", HttpStatus.NOT_FOUND)
+      }
+      Object.assign(user, updateUserDto)
+
+      return plainToClass(User,this.userRepository.save(user))
+   }
+
+   async changePassword(changePasswordDto: ChangePasswordDto, id:string){
+      const {currentPassword, newPassword, confirmPassword} = changePasswordDto
+      const user = await this.userRepository.findOne({where: {id}})
+
+      if (!user) {
+         return new HttpException("User not found", HttpStatus.NOT_FOUND)
+      }
+
+      const isValid = await bcrypt.compare(currentPassword, user.password)
+      if (!isValid){
+         return new HttpException("Password is not matching the current password", HttpStatus.BAD_REQUEST)
+      }
+
+      if (newPassword !== confirmPassword){
+         return new HttpException("Passwords are not matching", HttpStatus.BAD_REQUEST)
+      }
+
+      const salt = await bcrypt.genSalt();
+      user.password = await bcrypt.hash(confirmPassword, salt);
+
+      return plainToClass(User,this.userRepository.save(user))
    }
 }
