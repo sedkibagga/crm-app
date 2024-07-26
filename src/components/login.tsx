@@ -29,12 +29,11 @@ export default function Login() {
       const response = await axios.post("http://localhost:3000/users/login", { email, password });
       const { token } = response.data;
       localStorage.setItem('token', token);
-      console.log("Token saved:", localStorage.getItem('token')); // Log the saved token
-      
-      
+      console.log("Token saved:", localStorage.getItem('token'));
       router.push('/dashboard');
     } catch (error) {
       console.error("There was an error logging in!", error);
+
     }
   };
   

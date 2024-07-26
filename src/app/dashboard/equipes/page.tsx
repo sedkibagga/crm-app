@@ -40,12 +40,16 @@ const Equipes = () => {
 
   return (
     <div>
-      <Navbar />
-      <h1>Equipes</h1>
-      {equipes.map (equipe => (
-        <TableEquipes key={equipe.id_equipe} id_equipe={equipe.id_equipe} nom={equipe.nom} secteur={equipe.secteur} lieu={equipe.lieu}  id_chefEquipe={equipe.chefEquipe.nom + " " + equipe.chefEquipe.prenom} onDelete={deleteEquipe}/>
-        ))}
-      <button className="btn btn-primary" onClick={handleClick}>Add equipe</button>
+        <Navbar />
+        <div className="container mt-4">
+            <div className="row">
+                {equipes.map (equipe => (
+                    <TableEquipes key={equipe.id_equipe} id_equipe={equipe.id_equipe} nom={equipe.nom} secteur={equipe.secteur} lieu={equipe.lieu}  id_chefEquipe={equipe.chefEquipe.nom + " " + equipe.chefEquipe.prenom} onDelete={deleteEquipe}/>
+                ))}
+            </div>
+            <button className="btn btn-primary" onClick={handleClick}>Add equipe</button>
+        </div>
+
     </div>
   );
 };

@@ -34,7 +34,10 @@ const TableEquipes: FC<EquipesType> = ({ secteur, lieu, nom, id_chefEquipe, id_e
                 <td>{lieu}</td>
                 
                 <td>{id_chefEquipe}</td>
-                <td><button className="btn btn-danger" onClick={handleDelete}>Delete</button></td>
+                <td>
+                    <button className="btn btn-warning" style={{marginRight:"10px"}}>Edit</button>
+                    <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
+                </td>
             </tr>
         </tbody>
         </table>
