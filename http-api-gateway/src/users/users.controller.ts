@@ -14,6 +14,7 @@ import { UpdateRendezVousDto } from './dto/updateRendezVous.dto';
 import { UpdateEquipeDto } from './dto/updateEquipe.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
+import { commentsDto, updateCommentDto } from './dto/comments.dto';
 
 @Controller('users')
 export class UsersController {
@@ -202,4 +203,77 @@ export class UsersController {
       }
     }
   }
+
+  @Post ("ajouterCommentaire/:id")
+  @UseGuards(jwtAuthGuard)
+  async ajouterCommentaire(@Param('id') id: string , @Req() req, @Body() data: commentsDto){
+    try {
+      await this.verificationAuth(req, id);
+      console.log ("id in api gateway : " , id , "data in api gateway : " , data);
+      return this.natsClient.send({ cmd:'ajouter_commentaire'}, {id , data});
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        return error;
+      } else {
+        return new HttpException('Internal server error', 500);
+      }
+    }
+  } 
+
+  @Delete("supprimerComment/:id/:commentId")
+  @UseGuards(jwtAuthGuard) 
+  async deleteCommantaire(@Param('id') id: string , @Param('commentId') commentId: string , @Req() req){
+    try {
+      await this.verificationAuth(req, id);
+      return this.natsClient.send({ cmd: 'supprimer_commentaire' }, {id, commentId});
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        return error;
+      } else {
+        return new HttpException('Internal server error', 500);
+      }
+    }
+  }
+
+@Patch('modifierCommentaire/:id/:commentId')
+@UseGuards(jwtAuthGuard)
+async updateComment(
+  @Param('id') id: string,
+  @Param('commentId') commentId: string,
+  @Req() req,
+  @Body() data: updateCommentDto
+) {
+  try {
+    await this.verificationAuth(req, id);
+    const response = await this.natsClient.send({ cmd: 'modifier_commentaire' }, { id, data, commentId });
+    console.log("Update response:", response);
+    return response;
+  } catch (error) {
+    console.error("Error in updateComment:", error.message);
+    if (error instanceof ForbiddenException) {
+      return error;
+    } else {
+      return new HttpException('Internal server error', 500);
+    }
+  }
+}
+
+
+
+  @Get('Commentaires/:id')
+  @UseGuards(jwtAuthGuard)
+  async getAllCommentaires(@Param('id') id: string, @Req() req) {
+    try {
+      await this.verificationAuth(req, id);
+      return this.natsClient.send({ cmd: 'get_all_commentaires' }, id);
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        return error;
+      } else {
+        return new HttpException('Internal server error', 500);
+      }
+    }
+  }
+
+
 }

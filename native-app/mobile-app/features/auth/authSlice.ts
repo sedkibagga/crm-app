@@ -2,7 +2,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authservice from "./authService";
-import { loginUserType } from "../../Types/DataTypes";
+import { loginUserType, updatePassword, updateProfile } from "../../Types/DataTypes";
 
 export interface AuthState {
     user: any;
@@ -23,7 +23,7 @@ const initialState: AuthState = {
 export const loadUserFromStorage = createAsyncThunk(
     'auth/loadUserFromStorage',
     async () => {
-        try { 
+        try {
             const userString = await AsyncStorage.getItem('user');
             return userString ? JSON.parse(userString) : null;
         } catch (error) {
@@ -38,9 +38,9 @@ export const loginUser = createAsyncThunk(
     async (loginData: loginUserType, thunkAPI) => {
         try {
             const response = await authservice.register(loginData);
-            await AsyncStorage.setItem("user", JSON.stringify(response)); 
+            await AsyncStorage.setItem("user", JSON.stringify(response));
             return response;
-        } catch (error:any) {
+        } catch (error: any) {
             const message = error.response.data.message;
             return thunkAPI.rejectWithValue(message);
         }
@@ -53,6 +53,37 @@ export const logoutUser = createAsyncThunk(
         await AsyncStorage.removeItem("user");
     }
 );
+
+export const updateUserProfile = createAsyncThunk(
+    "auth/updateUserProfile",
+    async ({ updatedProfile, id, token }: { updatedProfile: updateProfile, id: string, token: string }) => {
+        try {
+            const response = await authservice.UpdateProfile(token, id, updatedProfile);
+            console.log("Profile updated successfully:", response);
+            await AsyncStorage.setItem("user", JSON.stringify(response));
+            return response;
+        } catch (error) {
+            console.error('Profile update failed:', error);
+            throw error;
+        }
+    }
+);
+
+export const UpdatePassword = createAsyncThunk(
+    "auth/UpdatePassword",
+    async ({ id, updatedPassword, token }: { id: string, updatedPassword: updatePassword, token: string }) => {
+        try {
+            const response = await authservice.UpdatePassword(token, id, updatedPassword);
+            console.log("Password updated successfully:", response);
+            await AsyncStorage.setItem("user", JSON.stringify(response));
+            return response;
+        } catch (error) {
+            console.error('Password update failed:', error);
+            throw error;
+        }
+    }
+);
+
 
 export const authSlice = createSlice({
     name: 'auth',
@@ -96,6 +127,38 @@ export const authSlice = createSlice({
             })
             .addCase(logoutUser.fulfilled, (state) => {
                 state.user = null;
+            }) 
+            .addCase(updateUserProfile.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(updateUserProfile.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.user = { ...state.user, ...action.payload };
+
+            })
+            .addCase(updateUserProfile.rejected, (state, action) => {   
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload as string;
+                // state.user = null;
+                console.error('Profile update failed:', action.error); // Log error details
+
+            })
+            .addCase(UpdatePassword.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(UpdatePassword.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.user = { ...state.user, ...action.payload };
+            })
+            .addCase(UpdatePassword.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload as string;
+                state.user = state.user
+                console.error('Password update failed:', action.error); 
             });
     },
 });

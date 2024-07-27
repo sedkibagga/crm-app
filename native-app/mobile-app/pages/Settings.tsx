@@ -1,11 +1,15 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
 import SettingsComponent from '@/components/SettingsComponent';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/Store/Store';
 
 const Settings = () => {
+  const {user} = useSelector((state: RootState) => state.auth);
+  console.log("user in settings:", user)
   return (
     <SafeAreaView style={styles.container}>
-      <SettingsComponent />
+      <SettingsComponent nom={user.nom} prenom={user.prenom} email={user.email} />
     </SafeAreaView>
   );
 }

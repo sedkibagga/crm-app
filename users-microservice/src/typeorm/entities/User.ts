@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Equipe } from "./Equipe";
 import { Exclude } from "class-transformer";
 import { RendezVous } from "./RendezVous";
+import { Comments } from "./Comments";
 
 @Entity({ name: 'users' })
 export class User {
@@ -32,4 +33,7 @@ export class User {
 
     @OneToMany(() => RendezVous, rendezVous => rendezVous.commercial, {cascade:true, onDelete: "CASCADE"})
     rendez_vous?: RendezVous[];
+
+    @OneToMany(() => Comments , comments => comments.user, {cascade:true, onDelete: "CASCADE"})
+    comments?: Comments[];
 }

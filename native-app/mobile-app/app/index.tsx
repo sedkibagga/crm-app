@@ -13,6 +13,8 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useEffect } from "react";
 import Settings from "@/pages/Settings";
 import Feather from '@expo/vector-icons/Feather';
+import Comments from "@/pages/Comments";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 const Drawer = createDrawerNavigator();
 
@@ -75,6 +77,14 @@ const DrawerNavigator = () => {
         drawerIcon: ({ color, size }) => (
           <Feather name="settings" size={size} color={color} />
         ),
+      }}
+      />
+      <Drawer.Screen
+      name="comments" 
+      component={Comments}
+      options={{
+        drawerIcon: ({ color, size }) => (
+      <FontAwesome name="commenting-o" size={size} color={color} />        ),
       }}
       />
     </Drawer.Navigator>

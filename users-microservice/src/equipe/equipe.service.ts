@@ -19,7 +19,7 @@ export class EquipeService {
     async createEquipe(createEquipeDto: CreateEquipeDto) {
         const { id_chefEquipe, secteur, lieu, nom } = createEquipeDto;
         try {
-            const chefEquipe = await this.userRepository.findOne({ where: { id: id_chefEquipe } });
+            const chefEquipe = await this.userRepository.findOne({ where: { id: id_chefEquipe } , relations: ['equipes_chef']});
             
             if (!chefEquipe) {
                 return new HttpException("Chef d'équipe non trouvé", 404);
