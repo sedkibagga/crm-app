@@ -15,6 +15,7 @@ import Settings from "@/pages/Settings";
 import Feather from '@expo/vector-icons/Feather';
 import Comments from "@/pages/Comments";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import MapPage from "@/pages/MapPage";
 
 const Drawer = createDrawerNavigator();
 
@@ -82,6 +83,14 @@ const DrawerNavigator = () => {
       <Drawer.Screen
       name="comments" 
       component={Comments}
+      options={{
+        drawerIcon: ({ color, size }) => (
+      <FontAwesome name="commenting-o" size={size} color={color} />        ),
+      }}
+      />
+      <Drawer.Screen
+      name="Map" 
+      component={MapPage}
       options={{
         drawerIcon: ({ color, size }) => (
       <FontAwesome name="commenting-o" size={size} color={color} />        ),
