@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ajoute_point_de_vente, ajouteComment, getPointDeVente, getRendezVous, modifierComment, updatePointDeVente, UpdateRendezVous } from "../../Types/DataTypes";
 
-const BaseUri = "http://192.168.1.5:3000/users/"; //Carte réseau sans fil Wi-Fi
+const BaseUri = "http://192.168.43.44:3000/users/"; //Carte réseau sans fil Wi-Fi
 
 
 const get_all_point_de_vente = async (token: string): Promise<getPointDeVente[]> => {

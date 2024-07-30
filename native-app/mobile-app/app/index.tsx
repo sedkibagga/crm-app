@@ -81,11 +81,11 @@ const DrawerNavigator = () => {
       }}
       />
       <Drawer.Screen
-      name="comments" 
+      name="Comments" 
       component={Comments}
       options={{
         drawerIcon: ({ color, size }) => (
-      <FontAwesome name="commenting-o" size={size} color={color} />        ),
+      <FontAwesome name="commenting-o" size={size} color={color} /> ),
       }}
       />
       <Drawer.Screen
@@ -93,7 +93,7 @@ const DrawerNavigator = () => {
       component={MapPage}
       options={{
         drawerIcon: ({ color, size }) => (
-      <FontAwesome name="commenting-o" size={size} color={color} />        ),
+      <FontAwesome name="map-marker" size={size} color={color} />  ),
       }}
       />
     </Drawer.Navigator>
