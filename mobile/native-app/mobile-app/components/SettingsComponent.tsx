@@ -6,16 +6,95 @@ import {
   View,
   Text,
   TouchableOpacity,
+
 } from 'react-native';
-import { Avatar } from '@rneui/themed';
+import { Avatar, Button } from '@rneui/themed';
 import Entypo from '@expo/vector-icons/Entypo';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { updatePassword, updateProfile } from '@/Types/DataTypes';
+import { Modal, Portal, TextInput } from 'react-native-paper';
+import { useDispatch, useSelector } from 'react-redux';
+import { loadUserFromStorage, logoutUser, UpdatePassword, updateUserProfile } from '@/features/auth/authSlice';
+import { RootState } from '@/Store/Store';
 
-const SettingsComponent = () => {
-  const [form, setForm] = useState({
-    emailNotifications: true,
-    pushNotifications: false,
-  });
+const getInitials = (nom?: string, prenom?: string) => {
+  const firstInitial = nom ? nom.charAt(0).toUpperCase() : '';
+  const secondInitial = prenom ? prenom.charAt(0).toUpperCase() : '';
+  return `${firstInitial}${secondInitial}`;
+};
+const SettingsComponent: React.FC<updateProfile> = ({ nom, prenom, email }) => {
+  const initials = getInitials(nom, prenom);
+  const [FirstName, setFirstName] = useState<string | undefined>(nom);
+  const [LastName, setLastName] = useState<string | undefined>(prenom);
+  const [Email, setEmail] = useState<string | undefined>(email);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState<boolean>(false);
+  const [currentPassword , setCurrentPassword] = useState<string>('');
+  const [newPassword , setNewPassword] = useState<string>('');
+  const [confirmedPassword , setConfirmedPassword] = useState<string>('');
+  const dispatch = useDispatch();
+  const [showLogoutModal , setShowLogoutModal] = useState<boolean>(false);
+  const {user} = useSelector((state: RootState) => state.auth);
+  const handleUpdateProfile = async () => {
+    const updatedProfile: updateProfile = {
+      nom: FirstName,
+      prenom: LastName,
+      email: Email
+    };
+  
+    // console.log("Updating profile with:", updatedProfile); 
+     console.log("id in handleUpdateProfile settings:", user.id);
+    try {
+      await dispatch(updateUserProfile({
+        id: user.id,
+        updatedProfile: updatedProfile,
+        token: user.token
+      }) as any); 
 
+      dispatch(loadUserFromStorage() as any);
+    } 
+    
+    catch (error) {
+      console.log('Update profile error:', error); 
+    }
+  
+    setShowModal(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser() as any);
+    } catch (error) {
+      console.log('Logout error:', error);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    const updatedPassword: updatePassword = {
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmedPassword
+    };
+
+    if (newPassword !== confirmedPassword) {
+        console.log("Passwords do not match");
+        return;
+    } else {
+        try {
+            await dispatch(UpdatePassword({
+                id: user.id,
+                updatedPassword: updatedPassword,
+                token: user.token
+            }) as any);
+            
+            dispatch(loadUserFromStorage() as any);
+        } catch (error) {
+            console.log('Update password error:', error);
+        }
+        setShowChangePasswordModal(false);
+    }
+};
+  
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f8f8f8' }}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -26,12 +105,12 @@ const SettingsComponent = () => {
               <Avatar
                 size={32}
                 rounded
-                title="Rd"
+                title={initials}
                 containerStyle={styles.profileAvatar}
               />
               <View style={styles.profileBody}>
-                <Text style={styles.profileName}>John Doe</Text>
-                <Text style={styles.profileHandle}>john@example.com</Text>
+                <Text style={styles.profileName}>{nom} {prenom}</Text>
+                <Text style={styles.profileHandle}>{email}</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -43,36 +122,39 @@ const SettingsComponent = () => {
               <View style={styles.row}>
                 <Text style={styles.rowLabel}>FirstName</Text>
                 <View style={styles.rowSpacer} />
-                <Text style={styles.rowValue}>bagga</Text>
+                <Text style={styles.rowValue}>{nom}</Text>
               </View>
             </View>
             <View style={[styles.rowWrapper, styles.rowFirst]}>
               <View style={styles.row}>
                 <Text style={styles.rowLabel}>LastName</Text>
                 <View style={styles.rowSpacer} />
-                <Text style={styles.rowValue}>sedki</Text>
+                <Text style={styles.rowValue}>{prenom}</Text>
               </View>
             </View>
             <View style={[styles.rowWrapper, styles.rowFirst]}>
               <View style={styles.row}>
                 <Text style={styles.rowLabel}>Email</Text>
                 <View style={styles.rowSpacer} />
-                <Text style={styles.rowValue}>sedkibagga4@gmail.com</Text>
+                <Text style={styles.rowValue}>{email}</Text>
               </View>
             </View>
-            <View style={[styles.rowWrapper, styles.rowFirst]}>
-              <View style={styles.row}>
-                <Text style={styles.rowLabel}>Num</Text>
-                <View style={styles.rowSpacer} />
-                <Text style={styles.rowValue}>96493288</Text>
-              </View>
-            </View>
+
+
           </View>
+        </View>
+        <View style={[styles.rowWrapper, styles.rowFirst]}>
+          <TouchableOpacity style={styles.row} onPress={() => setShowModal(true)}>
+            <AntDesign name="edit" size={24} color="black" style={styles.icon} />
+            <Text style={[styles.rowLabel, styles.rowLabelChangePassword]}>
+              Update Profile
+            </Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.section}>
           <View style={styles.sectionBody}>
             <View style={[styles.rowWrapper, styles.rowFirst]}>
-              <TouchableOpacity style={styles.row}>
+              <TouchableOpacity style={styles.row} onPress={() => setShowChangePasswordModal(true)}>
                 <Entypo name="key" size={24} color="black" style={styles.icon} />
                 <Text style={[styles.rowLabel, styles.rowLabelChangePassword]}>
                   Change Password
@@ -83,10 +165,73 @@ const SettingsComponent = () => {
         </View>
       </ScrollView>
       <View style={styles.logoutContainer}>
-        <TouchableOpacity style={styles.logoutButton}>
+        <TouchableOpacity style={styles.logoutButton} onPress={() => setShowLogoutModal(true)}>
           <Text style={[styles.rowLabel, styles.rowLabelLogout]}>Log Out</Text>
         </TouchableOpacity>
       </View>
+      <Portal>
+        <Modal visible={showModal} onDismiss={() => setShowModal(false)} contentContainerStyle={styles.modal}>
+          <TextInput
+            label="Name"
+            value={FirstName}
+            onChangeText={text => setFirstName(text)}
+            style={styles.input}
+          />
+          <TextInput
+            label="Last Name"
+            value={LastName}
+            onChangeText={text => setLastName(text)}
+            style={styles.input}
+          />
+          <TextInput
+            label="Email"
+            value={Email}
+            onChangeText={text => setEmail(text)}
+            style={styles.input}
+          />
+
+          <Button style={styles.updateButton}  color="#1c2b4b" onPress={handleUpdateProfile}>
+            Update
+          </Button>
+
+        </Modal>
+      </Portal>
+      <Portal>
+        <Modal visible={showChangePasswordModal} onDismiss={() => setShowChangePasswordModal(false)} contentContainerStyle={styles.modal}>
+          <TextInput
+            label="current password"
+            value={currentPassword}
+            onChangeText={text => setCurrentPassword(text)}
+            style={styles.input}
+          />
+          <TextInput
+            label="new password"
+            value={newPassword}
+            onChangeText={text => setNewPassword(text)}
+            style={styles.input}
+          />
+          <TextInput
+            label="confirm password"
+            value={confirmedPassword}
+            onChangeText={text => setConfirmedPassword(text)}
+            style={styles.input}
+          />
+
+          <Button style={styles.updateButton}  color="#1c2b4b" onPress={handleChangePassword} >
+            changePassword
+          </Button>
+
+        </Modal>
+      </Portal>
+      <Portal>
+        <Modal visible={showLogoutModal} onDismiss={() => setShowLogoutModal(false)} contentContainerStyle={styles.modal}>
+        <Text style={styles.logoutText}>Are you sure to logout?</Text>
+          <View style={styles.logoutButtonsContainer}>
+            <Button onPress={handleLogout} color="blue" style={styles.logoutButtonStyle}>Yes</Button>
+            <Button onPress={() => setShowLogoutModal(false)} color="red" style={styles.logoutButtonStyle}>No</Button>
+          </View>
+        </Modal>
+      </Portal>
     </SafeAreaView>
   );
 };
@@ -96,9 +241,18 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 16,
   },
+  modal: {
+    backgroundColor: 'white',
+    padding: 20,
+    margin: 20,
+    borderRadius: 10,
+  },
   /** Section */
   section: {
     paddingVertical: 12,
+  },
+  input: {
+    marginBottom: 10,
   },
   sectionTitle: {
     margin: 8,
@@ -129,6 +283,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
+  updateButton: {
+    marginTop: 10,
+   
+},
   profileAvatar: {
     width: 60,
     height: 60,
@@ -169,6 +327,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
+  logoutButton: {
+    alignItems: 'center',
+  },
   rowLabel: {
     fontSize: 16,
     letterSpacing: 0.24,
@@ -178,6 +339,20 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 0,
+  },
+  logoutText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  logoutButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  logoutButtonStyle: {
+    flex: 1,
+    marginHorizontal: 5,
+    
   },
   rowValue: {
     fontSize: 16,
@@ -195,7 +370,7 @@ const styles = StyleSheet.create({
     color: 'blue',
     fontWeight: '500',
     marginLeft: '20%',
-    
+
   },
   icon: {
     color: 'blue',
@@ -209,11 +384,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '100%',
   },
-  logoutButton: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  
 });
 
 export default SettingsComponent;

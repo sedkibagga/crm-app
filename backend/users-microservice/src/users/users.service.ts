@@ -52,7 +52,7 @@ export class UsersService {
             } else {
                const payload = { sub: userFindedByEmail.id, nom: userFindedByEmail.nom , role : userFindedByEmail.role };
                     const token = this.jwtService.sign(payload);
-                    return { token: token, email: userFindedByEmail.email, nom: userFindedByEmail.nom, prenom: userFindedByEmail.prenom , role : userFindedByEmail.role };
+                    return { token: token, email: userFindedByEmail.email, nom: userFindedByEmail.nom, prenom: userFindedByEmail.prenom , role : userFindedByEmail.role , id: userFindedByEmail.id };
             }
          }
 

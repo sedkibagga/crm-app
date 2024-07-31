@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import apisService from "./apisService";
-import { ajoute_point_de_vente, getPointDeVente, getRendezVous, updatePointDeVente, UpdateRendezVous } from "../../Types/DataTypes";
+import { ajoute_point_de_vente, ajouteComment, getAllComments, getPointDeVente, getRendezVous, modifierComment, updatePointDeVente, UpdateRendezVous } from "../../Types/DataTypes";
 export interface ApisState {
     pointsDeVente: getPointDeVente[] | null;
     isError: boolean;
@@ -8,7 +8,8 @@ export interface ApisState {
     message: string;
     isLoading: boolean;
     pointDeVenteAjouter : ajoute_point_de_vente | null ;
-    rendez_vous_List : getRendezVous[] | null
+    rendez_vous_List : getRendezVous[] | null  ; 
+    Comments : getAllComments[] | null  ;
 }
 
 const initialState: ApisState = {
@@ -18,7 +19,8 @@ const initialState: ApisState = {
     message: '',
     isLoading: false,
     pointDeVenteAjouter : null,
-    rendez_vous_List : null
+    rendez_vous_List : null , 
+    Comments : null
 };
 export const getAllPointDeVente = createAsyncThunk(
     "apis/getAllPointDeVente",
@@ -81,6 +83,55 @@ export const update_Point_De_Vente = createAsyncThunk(
         return response;
     }
 )
+
+export const get_All_Comments = createAsyncThunk(
+    "apis/get_All_Comments",
+    async ({token , id} : {token : string , id : string}) => {
+        const response = await apisService.getAllComments(token , id);
+        return response;
+    }
+) 
+
+export const ajouter_commentaire = createAsyncThunk(
+    "apis/ajouter_commentaire",
+    async ({token , id , commentaire} : {token : string , id : string , commentaire : ajouteComment}) => {
+        try {
+            const response = await apisService.ajouterComment(token , id , commentaire);
+            return response;
+        } catch(error:any) {
+            console.log(error.response?.data?.message || error.message || "An error occurred while adding the point of sale");
+        }
+    }
+);
+
+export const supprimer_commentaire = createAsyncThunk(
+    "apis/supprimer_commentaire",
+    async ({token , id , id_comment} : {token : string , id : string , id_comment : string}) => {
+        try {
+          const response = await apisService.deleteComment(token , id , id_comment);
+          return response;
+        } catch(error:any) {
+            console.log(error.response?.data?.message || error.message || "An error occurred while adding the point of sale");
+        }
+        
+    } 
+)
+    
+
+    export const modifier_commentaire = createAsyncThunk(
+        "apis/modifier_commentaire",
+        async ({token ,  id_comment , comment , id  } : {token : string ,  id_comment : string , comment:modifierComment , id : string }) => {
+            try {
+                console.log("token in apis slice" , token , "id_comment" , id_comment , "comment" , comment , "id" , id)
+                const response = await apisService.ModifierComment(token , id_comment , comment , id);
+                return response;
+
+            } catch(error:any) {
+                console.log(error.response?.data?.message || error.message || "An error occurred while adding the point of sale");
+
+            }
+        }
+    )
 
 export const apisSlice = createSlice({
     name: "apis",
@@ -154,10 +205,7 @@ export const apisSlice = createSlice({
                         rdv.id === action.payload.id ? action.payload : rdv
                     );
                 }
-            }) 
-
-            
-            
+            })      
             .addCase(updateRendezVous.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
@@ -181,6 +229,73 @@ export const apisSlice = createSlice({
                 state.isError = true;
                 state.message = action.payload as string || "Something went wrong";
             })
+
+            .addCase(get_All_Comments.pending, (state) => {
+                state.isLoading = true;
+            })
+
+            .addCase(get_All_Comments.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.Comments = action.payload;
+            })
+
+            .addCase(get_All_Comments.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload as string || "Something went wrong";
+                state.Comments = null;
+            }) 
+
+            .addCase(ajouter_commentaire.pending, (state) => {
+                state.isLoading = true;
+            })
+
+            .addCase(ajouter_commentaire.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.Comments =  state.Comments? [...state.Comments, action.payload] : [action.payload];
+            })
+            .addCase(ajouter_commentaire.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload as string || "Something went wrong";
+                
+            })
+            .addCase(supprimer_commentaire.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(supprimer_commentaire.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                if (state.Comments) {
+                    state.Comments = state.Comments.filter(comment => comment.id_comment !== action.payload);
+                }
+            })
+            .addCase(supprimer_commentaire.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload as string || "Something went wrong";
+                console.log(state.message);
+            }) 
+            .addCase(modifier_commentaire.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(modifier_commentaire.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                if (state.Comments) {
+                    state.Comments = state.Comments.map(comment =>
+                        comment.id_comment === action.payload.id_comment ? action.payload : comment
+                    );
+                }
+            }) 
+            .addCase(modifier_commentaire.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload as string || "Something went wrong";
+                console.log(state.message);
+            });
 
     },
 });

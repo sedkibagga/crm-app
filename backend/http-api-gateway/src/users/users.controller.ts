@@ -186,7 +186,8 @@ export class UsersController {
   @UseGuards(jwtAuthGuard)
   async updateUser(@Param('id') id: string , @Req() req, @Body() data: UpdateUserDto){
     try {
-      await this.verificationAuth(req, id);
+      console.log ("id in api gateway" , id);
+       await this.verificationAuth(req, id);
       return this.natsClient.send({ cmd: 'update_user' }, {id, data});
     } catch (error) {
       if (error instanceof ForbiddenException) {

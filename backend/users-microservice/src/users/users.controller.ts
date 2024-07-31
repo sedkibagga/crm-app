@@ -37,6 +37,7 @@ export class UsersController {
     @MessagePattern({cmd: "update_user"})
     async updateUser(@Payload() payload: {data: UpdateUserDto, id: string}){
         const {data, id} = payload
+        console.log ("id in usersMicroservice:", id);
         return this.userService.updateUser(data, id)
     }
 

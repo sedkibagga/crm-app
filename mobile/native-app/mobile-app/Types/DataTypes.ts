@@ -50,4 +50,45 @@ export type updatePointDeVente = {
     num_tel?: number
     localisation?: string
     decision?: string
+} 
+export type updateProfile = {
+    nom?: string
+    prenom?: string
+    email?: string
+   
+  }
+
+  export type updatePassword = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
+
+export type UserType = {
+    id : string,
+    nom : string,
+    prenom : string,
+    email : string,
+    password : string,
+    role : string , 
+    num_tel : number
+}
+export type getAllComments = {
+    id_comment  : string,
+    comment : string,
+    name : string ,
+    user : UserType
+}
+
+export type ajouteComment = {
+    comment : string ,
+    name : string 
+}
+
+export type modifierComment = {
+    comment : string
+}
+
+
+  
+

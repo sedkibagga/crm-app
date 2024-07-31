@@ -25,14 +25,14 @@ const FormComponent = () => {
     const {isSuccess , pointDeVenteAjouter , isError, message } = useSelector((state: RootState) => state.api);
     useEffect(() => {
         if (isError) {
-            alert(message);
+            console.log(message);
            
         }
-        if (isSuccess && pointDeVenteAjouter) {
-            alert('Point de vente ajouté avec succès');
+        // if (pointDeVenteAjouter) {
+        //     alert('Point de vente ajouté avec succès');
             
-        }
-    }, [isError, isSuccess, message, pointDeVenteAjouter, dispatch]);
+        // }
+    }, [ pointDeVenteAjouter]);
 
     useEffect(() => {
         console.log("isSuccess:",isSuccess);
@@ -61,7 +61,7 @@ const FormComponent = () => {
             }
 
             dispatch(ajoutePointDeVente({ nom, prenom, secteur_activite, num_tel: numTelAsNumber, localisation, decision }) as any);
-            
+            alert('Point de vente ajouté avec succès');
             setNom('');
             setPrenom('');
             setSecteur_activite('');
