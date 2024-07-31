@@ -1,0 +1,37 @@
+
+
+services:
+  api-gateway: 
+    build: ./http-api-gateway  
+    ports: 
+      - "3000:3000"
+    volumes:
+      - ./http-api-gateway/src:/usr/src/app/src
+    command: >
+      npm run start:dev
+    env_file: 
+      - ./http-api-gateway/.env
+
+  users_microservice:
+    build: ./users-microservice 
+    volumes:
+      - ./users-microservice/src:/usr/src/app/src
+    command: >
+      npm run start:dev
+    env_file:
+      - ./users-microservice/.env
+  
+  nats: 
+    image: nats
+    ports: 
+      - "4222:4222"
+    
+  
+  postgres_db:
+    image: postgres
+    ports: 
+      - "5432:5432"
+    environment: 
+      POSTGRES_USER: khallasli
+      POSTGRES_PASSWORD: khallasli
+      POSTGRES_DB: crm_database
